@@ -47,8 +47,8 @@ instruction* currentInstruct = headInstruct;
 process* headProcess = new process;
 process* currentProcess = headProcess;
 
-//ifstream file;
-//ofstream output;
+ifstream file;
+ofstream output;
 
 int cores = 0;
 instruction** coreInstructs = NULL;
@@ -68,20 +68,27 @@ int coreSum = 0;
 
 int main()
 {
-	//string fileName;
-	//cin >> fileName;
-
-	//file.open(fileName);
-	//if (file.fail())
-	//{
-	//	cout << "Could not open file.\n";
-	//	exit(1);
-	//}
+	string fileName;
+	cout << "Enter name of input file: ";
+	cin >> fileName;
+	file.open(fileName);
+	if (file.fail())
+	{
+		cout << "Could not open file.\n";
+		exit(1);
+	}
+	cout << "Enter name of output file: ";
+	cin >> fileName;
+	output.open(fileName);
+	if (output.fail())
+	{
+		cout << "Could not open file.\n";
+		exit(1);
+	}
 
 	string word;
-	cin >> word;
-	cin >> cores;
-	//cores = stoi(word);
+	file >> word;
+	file >> cores;
 	coreInstructs = new instruction*[cores];
 	coreTimes = new int[cores];
 	for (int i = 0; i < cores; i++)
@@ -91,7 +98,7 @@ int main()
 	}
 	tempArr = new instruction*[cores + 2];
 
-	while (cin >> word)
+	while (file >> word)
 	{
 		instruction* newInstruct = new instruction;
 		newInstruct->instruct = word;
@@ -105,17 +112,18 @@ int main()
 			currentProcess->next = newProcess;
 			currentProcess = currentProcess->next;
 		}
-		cin >> newInstruct->value;
+		file >> newInstruct->value;
 		newInstruct->proc = currentProcess;
 		newInstruct->prev = currentInstruct;
 		currentInstruct->next = newInstruct;
 		currentInstruct = currentInstruct->next;
 	}
-	//file.close();
+	file.close();
 
 	readProcess(headProcess->next);
 	printSummary();
-
+	
+	cout << "End of program." << endl;
 	return 0;
 }
 
@@ -183,12 +191,12 @@ void readInstruction(instruction* ainstruc)
 void readProcess(process* aproc)
 {
 	update(aproc->link->value);
-	cout << "Process " << (aproc->procNum) << " starts at time " << timeNow << " ms" << endl;
+	output << "Process " << (aproc->procNum) << " starts at time " << timeNow << " ms" << endl;
 	printStatus();
 	readInstruction(aproc->link->next);
 
 	if (aproc->next != NULL)
-			readProcess(aproc->next);
+		readProcess(aproc->next);
 	else
 		update(INT_MAX);
 }
@@ -309,7 +317,7 @@ void update(int time)
 void endProcess(process* toTerminate)
 {
 	toTerminate->state = "TERMINATED";
-	cout << "Process " << toTerminate->procNum << " terminates at time " << timeNow << " ms" << endl;
+	output << "Process " << toTerminate->procNum << " terminates at time " << timeNow << " ms" << endl;
 	printStatus();
 	toTerminate->state = "";
 }
@@ -321,29 +329,29 @@ void printStatus()
 	{
 		temp = temp->next;
 		if (temp->state != "")
-			cout << "Process " << temp->procNum << " is " << temp->state << endl;
+			output << "Process " << temp->procNum << " is " << temp->state << endl;
 	}
-	cout << endl;
+	output << endl;
 }
 
 void printSummary()
 {
-	cout << "SUMMARY:" << endl;
-	cout << "Number of processes that completed: " << processes << endl;
-	cout << "Total number of SSD accesses: " << ssdAccesses << endl;
+	output << "SUMMARY:" << endl;
+	output << "Number of processes that completed: " << processes << endl;
+	output << "Total number of SSD accesses: " << ssdAccesses << endl;
 	if (ssdAccesses == 0)
-		cout << "Average SSD access time: " << 0 << " ms" << endl;
+		output << "Average SSD access time: " << 0 << " ms" << endl;
 	else
-		cout << "Average SSD access time: " << setprecision(2) << fixed << (double(ssdSum) / ssdAccesses) << " ms" << endl;
-	cout << "Total elapsed time: " << timeNow << " ms" << endl;
+		output << "Average SSD access time: " << setprecision(2) << fixed << (double(ssdSum) / ssdAccesses) << " ms" << endl;
+	output << "Total elapsed time: " << timeNow << " ms" << endl;
 	if (timeNow == 0)
 	{
-		cout << "Core utilization: " << 0 << " percent" << endl;
-		cout << "SSD utilization: " << 0 << " percent" << endl;
+		output << "Core utilization: " << 0 << " percent" << endl;
+		output << "SSD utilization: " << 0 << " percent" << endl;
 	}
 	else
 	{
-		cout << "Core utilization: " << setprecision(2) << fixed << ((double(coreSum) / timeNow) * 100) << " percent" << endl;
-		cout << "SSD utilization: " << setprecision(2) << fixed << ((double(ssdSum) / timeNow) * 100) << " percent" << endl;
+		output << "Core utilization: " << setprecision(2) << fixed << ((double(coreSum) / timeNow) * 100) << " percent" << endl;
+		output << "SSD utilization: " << setprecision(2) << fixed << ((double(ssdSum) / timeNow) * 100) << " percent" << endl;
 	}
 }
